@@ -19,6 +19,8 @@
 		<view class="py-2 px-3">
 			<main-big-button @click='addMsg'>立即投稿</main-big-button>
 		</view>
+		<!-- 弹窗 -->
+		<!-- <view class="position-fixed top-0 left-0 right-0"></view> -->
 	</view>
 </template>
 
