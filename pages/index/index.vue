@@ -26,10 +26,6 @@
 				</swiper>
 			</swiper-dot>
 		</view>
-
-		<!-- 	<card title="为你推荐">
-		
-		</card> -->
 		<!-- 列表样式一 -->
 		<card title="为你推荐">
 			<view class="f-list">
