@@ -76,26 +76,7 @@
 		<!-- 列表样式三-->
 		<card title="为你推荐">
 			<view class="f-list">
-				<view v-for="i in 6" :key="i" class="flex align-center py-2 border-bottom" style="width: 100%;">
-					<image src="/static/demo/list2/1.jpg" mode="" style="width: 260rpx;height: 160rpx;"
-						class="rounded-lg mx-2 flex-shrink"></image>
-					<view class="flex-1 flex flex-column">
-						<text class="font" style="line-height: 1.2;">xxxxxxxxxxxxxxxxxxxxxxxxxx
-							xxxxxxxxxxxxxxvxxxxx</text>
-						<text class="font-sm text-light-muted mt-auto">今天07:00</text>
-						<view class="flex align-center justify-between text-muted line-h">
-							<view class="line-h">
-								<text class="iconfont iconbofang font-md mx-1"></text>
-								<text class="font-sm">200万</text>
-							</view>
-							<view class="line-h mx-4">
-								<text class="iconfont icondanmushu font-md mx-1"></text>
-								<text class="font-sm">8899</text>
-							</view>
-							<text class="iconfont icongengduo ml-auto"></text>
-						</view>
-					</view>
-				</view>
+				<media-list v-for="(item,index) in list3" :key="index" :item="item" :index="index"></media-list>
 			</view>
 		</card>
 	</view>
@@ -104,10 +85,12 @@
 <script>
 	import swiperDot from '@/components/common/swiper-dot.vue';
 	import card from '@/components/common/card.vue';
+	import mediaList from '@/components/common/media-list.vue';
 	export default {
 		components: {
 			swiperDot,
-			card
+			card,
+			mediaList
 		},
 		data() {
 			return {
@@ -121,7 +104,15 @@
 				}, {
 					src: "../../static/demo/swiper/3.jpg",
 					title: "吴签爱上坐牢"
-				}, ]
+				}, ],
+				
+				list3:[{
+					cover:'/static/demo/list2/1.jpg',
+					title:'吴签的爱',
+					create_time:'今天07:00',
+					play_count:0,
+					damu_count:0
+				}]
 			}
 		},
 		onLoad() {

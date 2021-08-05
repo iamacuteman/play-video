@@ -1,5 +1,5 @@
 <template>
-	<view class="px-3 py-2 flex align-center" hover-class="bg-light" >
+	<view class="px-3 py-2 flex align-center" hover-class="bg-light" @click="$emit('click')">
 		<text v-if="icon" class="iconfont icondanmushu mr-3" :class="icon"></text>
 		<view class="mr-auto font-md">{{title}}</view>
 		<view class="text-muted font ">{{rightText}}<text v-if="showRightIcon" class="iconfont iconjinru ml-1 text-light-muted"></text></view>
