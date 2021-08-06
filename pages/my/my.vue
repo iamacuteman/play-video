@@ -55,7 +55,9 @@
 			fPopup
 		},
 		data() {
-			
+			return {
+				
+			}
 		},
 		methods: {
 			//选择投稿类型
