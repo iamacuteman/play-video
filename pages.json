@@ -104,6 +104,15 @@
             }
             
         }
+        ,{
+            "path" : "pages/user-videa-list/user-videa-list",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "视频列表",
+                "enablePullDownRefresh": false
+            }
+            
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

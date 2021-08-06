@@ -4,7 +4,8 @@
 			<media-list  :item="item" :index="index"></media-list>
 			<view class="flex" style="height: 100rpx;">
 				<view class="flex-1 flex justify-center align-center" hover-class="bg-light">修改</view>
-				<view class="flex-1 flex justify-center align-center" hover-class="bg-light">视频</view>
+				<view class="flex-1 flex justify-center align-center" hover-class="bg-light"
+				@click="openVideoList(item)">视频</view>
 				<view class="flex-1 flex justify-center align-center" hover-class="bg-light">删除</view>
 			</view>
 			<view class="f-divider"></view>
@@ -49,7 +50,11 @@
 			}
 		},
 		methods: {
-			
+			openVideoList(item){
+				uni.navigateTo({
+					url: '../user-videa-list/user-videa-list',
+				});
+			}
 		}
 	}
 </script>
