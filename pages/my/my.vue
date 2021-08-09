@@ -1,18 +1,21 @@
 <template>
 	<view>
-		<view class="p-3 flex align-center">
-			<image src="/static/demo/6.jpg" mode="" style="height: 120rpx;width: 120rpx;"
-				class="bg-light rounded-circle flex-shrink"></image>
-			<view class="flex flex-column pl-3 flex-1">
-				<view class="font-md text-dark">
-					summer
-					<text class="font-sm text-light-muted ml-3">男 广东</text>
+		<navigator url="../user-space/user-space">
+			<view class="p-3 flex align-center">
+				<image src="/static/demo/6.jpg" mode="" style="height: 120rpx;width: 120rpx;"
+					class="bg-light rounded-circle flex-shrink"></image>
+				<view class="flex flex-column pl-3 flex-1">
+					<view class="font-md text-dark">
+						summer
+						<text class="font-sm text-light-muted ml-3">男 广东</text>
+					</view>
+					<text class="font-sm text-muted">全国牙签代言人</text>
 				</view>
-				<text class="font-sm text-muted">全国牙签代言人</text>
 			</view>
-		</view>
+		</navigator>
 		<view class="f-divider"></view>
-		<f-list-item title="我的作品" icon="iconshipin" :showRightIcon="false" rightText="26个" @click="navigateTo('user-video')"></f-list-item>
+		<f-list-item title="我的作品" icon="iconshipin" :showRightIcon="false" rightText="26个"
+			@click="navigateTo('user-video')"></f-list-item>
 		<f-list-item title="收藏" icon="iconshoucang1" @click="navigateTo('user-fav')"></f-list-item>
 		<f-list-item title="关注" icon="iconguanzhu" rightText="567"></f-list-item>
 		<f-list-item title="历史记录" icon="iconlishi"></f-list-item>
@@ -24,7 +27,7 @@
 			<view class="position-absolute bottom-0 left-0 right-0 bg-white animated faster fadeIn ">
 				<view class="flex" style="height: 200rpx;">
 					<view class="flex-1 flex justify-center align-center flex-column" hover-class="bg-light"
-					@click="navigateTo('create')">
+						@click="navigateTo('create')">
 						<text
 							class="iconfont icondingdanwenjian flex align-center justify-center text-white bg-primary rounded-circle"
 							style="width: 80rpx;height: 80rpx;"></text>
@@ -56,8 +59,8 @@
 			fPopup
 		},
 		data() {
-			return{
-				
+			return {
+
 			}
 		},
 		methods: {
@@ -65,12 +68,12 @@
 			addMsg() {
 				this.$refs.popu.show()
 			},
-			hidePopu(){
+			hidePopu() {
 				this.$refs.popu.hide()
 			},
-			navigateTo(path){
+			navigateTo(path) {
 				uni.navigateTo({
-					url:"/pages/"+path+"/"+path,
+					url: "/pages/" + path + "/" + path,
 				})
 			}
 		}

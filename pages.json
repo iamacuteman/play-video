@@ -113,6 +113,32 @@
             }
             
         }
+        ,{
+            "path" : "pages/login/login",
+            "style" :                                                                                    
+            {
+				"app-plus":{
+					"titleNView":false
+				}
+            }
+            
+        }
+        ,{
+            "path" : "pages/user-space/user-space",
+            "style" :                                                                                    
+            {
+				"app-plus":{
+					"titleNView":{
+						"type":"transparent",
+						"buttons":[{
+							"float":"right",
+							"type":"menu"
+						}]
+					}
+				}
+            }
+            
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
