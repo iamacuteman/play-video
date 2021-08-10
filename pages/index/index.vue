@@ -30,12 +30,13 @@
 		<card title="为你推荐">
 			<view class="f-list">
 				<view class="rounded-lg border" v-for="(item,index) in 6" :key="index"
-					style="margin-left: 15rpx;margin-right: 15rpx;min-height: 5rpx;width: 328rpx;position: relative;">
+					style="margin-left: 15rpx;margin-right: 15rpx;min-height: 5rpx;width: 328rpx;position: relative;"
+					@click="openDetailVideo()">
 					<image src="/static/demo/list2/1.jpg" mode="" style="width: 100%;height: 220rpx;"
 						class="rounded-top-lg"></image>
 					<view class="flext align-center text-white"
 						style="height: 65rpx;background-image: linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,0.8));position: absolute;left: 0;right: 0;top: 155rpx;">
-						<text class="iconfont iconbofang font-md mx-1"></text>
+						<text class="iconfont iconbofangshu font-md mx-1"></text>
 						<text class="font-sm">200万</text>
 						<text class="iconfont icondanmushu font-md mx-1"></text>
 						<text class="font-sm">8899</text>
@@ -127,6 +128,11 @@
 		methods: {
 			changeSwiper(e) {
 				this.current = e.detail.current;
+			},
+			openDetailVideo(){
+				uni.navigateTo({
+					url: '../detail-video/detail-video',
+				});
 			}
 		}
 	}
