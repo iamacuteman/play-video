@@ -4,9 +4,11 @@
 			<video src=""  style="height: 225px;width: 750rpx;" controls></video>
 		<!-- #endif -->
 		<scroll-view scroll-y="true" :style="'height:'+scrollH+'px;'" >
-			<view class="border-bottom border-light-secondary flex align-stretch bg-white" style="height: 80rpx;position: fixed;left: 0;right: 0; top: 225px;z-index: 100;">
+			<view class="border-bottom border-light-secondary flex align-stretch bg-white" style="height: 
+			80rpx;position: fixed;left: 0;right: 0; z-index: 100;">
 				<view class="flex-1 flex justify-center align-center" v-for="(item,index) in tabBars" :key="index" @click="changeTab(index)">
-					<text class="font py-1 " :style="tabIndex === index?'border-bottom: 5rpx solid;':''" :class="tabIndex === index?'text-main border-main':''">{{item.name}}</text>
+					<text class="font py-1 " :style="tabIndex === index?'border-bottom: 5rpx solid;':''" 
+					:class="tabIndex === index?'text-main border-main':''">{{item.name}}</text>
 				</view>
 			</view>
 			<!-- 占位盒子 -->

@@ -1,15 +1,256 @@
 <template>
 	<view class="bg-dark">
-		123
+		<video id='video' ref="video" :src="src" poster='/static/demo/6.jpg' :controls="false"
+			:show-center-play-btn='false' :show-fullscreen-btn='false' :show-progress='false'
+			:enable-progress-gesture='false' style="width: 750rpx;height: 225px;" @fullscreenchange='fullscreenchange'
+			@timeupdate='timeupdate' @play='isplay = true' @pause='isplay = false'>
+			
+			<view  class="position-absolute flex align-center justify-center" :style="videoBox">
+				<!-- 蒙版(代替视频组件接收点击事件) -->
+				<view class="position-absolute left-0 right-0" :style="modalStyle" 
+				@touchstart ='touchStart' 
+				@touchmove = "touchMove"
+				@touchend = "touchEnd"
+				></view>
+				<!-- 提示框 -->
+				<view v-if="showToastStatus" class="p-2 rounded" style="background-color: rgba(0,0,0,0.3);">
+					<text v-if="toast.type === 'progress'" class="font text-white">{{currentTime|formatTime}}/{{duration|formatTime}}</text>
+					<text v-if="toast.type === 'msg'" class="font text-white">{{toast.msg}}</text>
+				</view>
+			</view>
+		</video>
+
+		<!-- 非全屏 -->
+		<!-- 顶部(左箭头)-->
+		<view v-if="showStatusBarStatus" class="video-bg-top bg-dark position-fixed top-0 left-0 right-0">
+			<view class="" :style="'height:'+statusBarHeight+'px'"></view>
+			<view style="height: 44px;" class="flex align-center">
+				<f-icon-btn :icon="'\ue612'" @click='back'></f-icon-btn>
+			</view>
+		</view>
+		<!-- 底部控制条 -->
+		<view v-if="showStatusBarStatus" class="position-fixed bottom-0 left-0 right-0 video-bg-bottom">
+			<view class="flex align-stretch" style="44px">
+				<!-- 播放按钮 -->
+				<f-icon-btn v-if="!isplay" :icon="'\ue63a'" :size="22" @click='playOrPause'></f-icon-btn>
+				<f-icon-btn v-else :icon="'\ue605'" :size="22" @click='playOrPause'></f-icon-btn>
+				<!-- 进度条 -->
+				<view class="flex-1">
+					<f-slider :duration="duration" :currentTime="currentTime"  @change='sliderChange' @update="sliderUpdate"></f-slider>
+				</view>
+				<!-- 时间 -->
+				<view class="flex align-center justify-center" style="width: 80px;">
+					<text class="font-sm text-white">{{currentTime|formatTime}}/{{duration|formatTime}}</text>
+				</view>
+				<f-icon-btn :icon="'\ue800'" :size="22"></f-icon-btn>
+			</view>
+		</view>
 	</view>
 </template>
 
 <script>
+	const d = weex.requireModule('dom');
+	let videoCTX = null;
+	let showToastTimer = null;
+	let timer = null;
+	import fIconBtn from './components/f-icon-btn.vue';
+	import fSlider from './components/f-slider.vue';
 	export default {
-		
+		provide(){
+			return {
+				v:this
+			}
+		},
+		components: {
+			fIconBtn,
+			fSlider
+		},
+		data() {
+			return {
+				src: 'https://v-cdn.zjol.com.cn/280443.mp4',
+				isplay: false, //是否播放
+				statusBarHeight: 0,
+				currentTime: 0,//当前时间点
+				duration: 0, //视频总时长
+				windowHeight:0,
+				windowWidth:0,
+				
+				fullScreenStatus:false,//全屏状态
+				
+				showToastStatus:false,//时间框显示状态
+				
+				toast:{
+					type:"msg",
+					msg:"提示"
+				},
+				
+				showStatusBarStatus:true ,//底部控制条的显示状态
+				
+				oldTouchs:{},//旧的触摸返回对象
+				oldValue:{},
+				dbCount:0,//点击蒙版的次数
+				touchType:null
+			}
+		},
+		created() {
+			let res = uni.getSystemInfoSync();
+			this.statusBarHeight = res.statusBarHeight;
+			this.windowHeight = res.windowHeight //屏幕高度
+			this.windowWidth = res.windowWidth //屏幕宽度
+			// 引入图标
+			d.addRule('fontFace', {
+				'fontFamily': "iconfont",
+				'src': "url('https://at.alicdn.com/t/font_1419176_mzo8rsjxi4c.ttf')"
+			});
+
+		},
+		mounted() {
+			videoCTX = this.$refs.video;
+		},
+		computed:{
+			videoBox(){
+				return this.fullScreenStatus ?`width:${this.windowHeight}px;height:${this.windowWidth}px`:`width:750rpx;height:225px;`
+			},
+			modalStyle(){
+				let top = this.statusBarHeight+44
+				return `top:${top}px;bottom:44px;`
+			}
+		},
+		methods: {
+			//显示或隐藏控制条
+			showOrHideStatusBar(){
+				this.showStatusBarStatus?this.hideStatusBar():this.showStatusBar()
+			},
+			//显示控制条
+			showStatusBar(){
+				this.showStatusBarStatus = true;
+				timer = timer? clearTimeout(timer):null;
+				let timer = setTimeout(()=>{
+					this.hideStatusBar()
+					timer = null;
+				},3000)
+			},
+			//隐藏控制条
+			hideStatusBar(){
+				this.showStatusBarStatus = false;
+			},
+			back() {
+				uni.navigateBack({
+					delta: 1
+				});
+			},
+			//播放和暂停
+			playOrPause() {
+				this.showToast({
+					msg:this.isplay?'暂停':'播放',
+					autoClose:true
+				})
+				if (this.isplay) {
+					videoCTX.pause()
+				} else {
+					this.showStatusBar()
+					videoCTX.play()
+				}
+			},
+			fullscreenchange(e) {
+
+			},
+			//监听时间进度
+			timeupdate(e) {
+				if(!this.showToastStatus){//时间框没出来时，才通过这里获得当前时间
+					this.currentTime = parseInt(e.detail.currentTime); //获得当前时间
+				}
+				this.duration = parseInt(e.detail.duration); //获得总时长
+			},
+			//进度条变化
+			sliderChange(e){//拖动进度条结束时
+				videoCTX.seek(e) //视频跳转到某个时间
+				this.showToastStatus = false;
+				videoCTX.play()
+			},
+			sliderUpdate(e){//拖动进度条过程中
+			   this.showStatusBar()
+			    videoCTX.pause();
+				this.showToastStatus = true;
+				this.currentTime = e;
+				this.showToast({
+					type:'progress',
+					autoClose:false
+				})
+				
+			},
+			
+			showToast(options){
+				this.toast.type = options.type || 'msg'
+				this.toast.msg = options.msg ||'提示'
+				this.showToastStatus = true;
+				
+				if(options.autoClose !== false){ //autoClose代表是否自动关闭提示框（拖动时不应该自动关闭）
+					if(showToastTimer) clearTimeout(showToastTimer)
+					showToastTimer = setTimeout(()=>{
+						this.showToastStatus = false;
+						showToastTimer = null
+					},500)
+				}
+			},
+			touchStart(e){
+				this.oldTouchs = e.changedTouches[0];
+				this.oldValue = {
+					currentTime:this.currentTime
+				}
+			},
+			touchMove(e){
+				let newTouchs = e.changedTouches[0];
+				if(!this.touchType){
+					this.touchType = Math.abs(newTouchs.pageX-this.oldTouchs.pageX) > 20 ?'current':null
+				}else if(){
+					
+				}
+			},
+			touchEnd(e){
+				if(this.dbCount ===1 || this.dbCount === 0){
+					this.dbCount++
+				}
+				if(this.dbCount > 0){
+					setTimeout(()=>{
+						if(this.dbCount === 1){//单击
+							this.showOrHideStatusBar()
+						}
+						if(this.dbCount === 2){//双击
+							this.playOrPause()
+						}
+						this.dbCount = 0;
+					},250)
+				}
+			}
+		},
+		filters: {
+			formatTime(result) {
+				var h = Math.floor(result / 3600) < 10 ? '0' + Math.floor(result / 3600) : Math.floor(result / 3600);
+				var m = Math.floor((result / 60 % 60)) < 10 ? '0' + Math.floor((result / 60 % 60)) : Math.floor((result /
+					60 % 60));
+				var s = Math.floor((result % 60)) < 10 ? '0' + Math.floor((result % 60)) : Math.floor((result % 60));
+				return result = result > 3600 ? (h + ":" + m + ":" + s) : m + ":" + s;
+			},
+			formatQuality(val) {
+				let arr = {
+					SD: "标清",
+					HD: "高清",
+					FHD: "超清"
+				}
+				return arr[val]
+			}
+		},
 	}
 </script>
 
 <style>
+	/* 渐变色 */
+	.video-bg-top {
+		background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+	}
 
+	.video-bg-bottom {
+		background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+	}
 </style>
