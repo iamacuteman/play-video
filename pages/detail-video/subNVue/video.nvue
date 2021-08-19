@@ -4,45 +4,63 @@
 			:show-center-play-btn='false' :show-fullscreen-btn='false' :show-progress='false'
 			:enable-progress-gesture='false' style="width: 750rpx;height: 225px;" @fullscreenchange='fullscreenchange'
 			@timeupdate='timeupdate' @play='isplay = true' @pause='isplay = false'>
-			
-			<view  class="position-absolute flex align-center justify-center" :style="videoBox">
-				<!-- 蒙版(代替视频组件接收点击事件) -->
-				<view class="position-absolute left-0 right-0" :style="modalStyle" 
-				@touchstart ='touchStart' 
-				@touchmove = "touchMove"
-				@touchend = "touchEnd"
-				></view>
+
+			<view class="position-absolute flex align-center justify-center" :style="videoBox">
+				<!-- 蒙版(代替视频组件接收触摸或点击事件) -->
+				<view class="position-absolute left-0 right-0" :style="modalStyle" @touchstart='touchStart'
+					@touchmove="touchMove" @touchend="touchEnd"></view>
 				<!-- 提示框 -->
 				<view v-if="showToastStatus" class="p-2 rounded" style="background-color: rgba(0,0,0,0.3);">
-					<text v-if="toast.type === 'progress'" class="font text-white">{{currentTime|formatTime}}/{{duration|formatTime}}</text>
+					<text v-if="toast.type === 'progress'"
+						class="font text-white">{{currentTime|formatTime}}/{{duration|formatTime}}</text>
 					<text v-if="toast.type === 'msg'" class="font text-white">{{toast.msg}}</text>
 				</view>
+				
+				<!-- 全屏 控制条 -->
+				<!-- 顶部 -->
+				<view v-if="showStatusBarStatus && fullScreenStatus" class="flex justify-between align-center video-bg-top  position-absolute top-0 left-0 right-0" style="height: 44px;" >
+					<view class="flex align-center" >
+						<!-- 箭头 -->
+						<view class="flex align-center">
+							<f-icon-btn :icon="'\ue612'" @click='fullOrExitScreen'></f-icon-btn>
+						</view>
+						<!-- 标题 -->
+						<view class="flex align-center px-2">
+							<text class="text-white" style="font-size: 15px;lines: 1;">视频标题</text>
+						</view>
+						<view class="flex align-center">
+							<f-icon-btn :icon="'\ue612'" @click='fullOrExitScreen'></f-icon-btn>
+						</view>
+					</view>
+				</view>
+				<!-- 底部 -->
 			</view>
 		</video>
 
-		<!-- 非全屏 -->
+		<!-- 非全屏 控制条 -->
 		<!-- 顶部(左箭头)-->
-		<view v-if="showStatusBarStatus" class="video-bg-top bg-dark position-fixed top-0 left-0 right-0">
+		<view v-if="showStatusBarStatus && !fullScreenStatus" class="video-bg-top bg-dark position-fixed top-0 left-0 right-0">
 			<view class="" :style="'height:'+statusBarHeight+'px'"></view>
 			<view style="height: 44px;" class="flex align-center">
 				<f-icon-btn :icon="'\ue612'" @click='back'></f-icon-btn>
 			</view>
 		</view>
 		<!-- 底部控制条 -->
-		<view v-if="showStatusBarStatus" class="position-fixed bottom-0 left-0 right-0 video-bg-bottom">
+		<view v-if="showStatusBarStatus &&!fullScreenStatus" class="position-fixed bottom-0 left-0 right-0 video-bg-bottom">
 			<view class="flex align-stretch" style="44px">
 				<!-- 播放按钮 -->
 				<f-icon-btn v-if="!isplay" :icon="'\ue63a'" :size="22" @click='playOrPause'></f-icon-btn>
 				<f-icon-btn v-else :icon="'\ue605'" :size="22" @click='playOrPause'></f-icon-btn>
 				<!-- 进度条 -->
 				<view class="flex-1">
-					<f-slider :duration="duration" :currentTime="currentTime"  @change='sliderChange' @update="sliderUpdate"></f-slider>
+					<f-slider :duration="duration" :currentTime="currentTime" @change='sliderChange'
+						@update="sliderUpdate"></f-slider>
 				</view>
 				<!-- 时间 -->
 				<view class="flex align-center justify-center" style="width: 80px;">
 					<text class="font-sm text-white">{{currentTime|formatTime}}/{{duration|formatTime}}</text>
 				</view>
-				<f-icon-btn :icon="'\ue800'" :size="22"></f-icon-btn>
+				<f-icon-btn :icon="'\ue800'" :size="22" @click="fullOrExitScreen"></f-icon-btn>
 			</view>
 		</view>
 	</view>
@@ -56,9 +74,9 @@
 	import fIconBtn from './components/f-icon-btn.vue';
 	import fSlider from './components/f-slider.vue';
 	export default {
-		provide(){
+		provide() {
 			return {
-				v:this
+				v: this
 			}
 		},
 		components: {
@@ -70,26 +88,27 @@
 				src: 'https://v-cdn.zjol.com.cn/280443.mp4',
 				isplay: false, //是否播放
 				statusBarHeight: 0,
-				currentTime: 0,//当前时间点
+				currentTime: 0, //当前时间点
 				duration: 0, //视频总时长
-				windowHeight:0,
-				windowWidth:0,
-				
-				fullScreenStatus:false,//全屏状态
-				
-				showToastStatus:false,//时间框显示状态
-				
-				toast:{
-					type:"msg",
-					msg:"提示"
+				windowHeight: 0,
+				windowWidth: 0,
+
+				fullScreenStatus: false, //全屏状态
+
+				showToastStatus: false, //时间框显示状态
+
+				toast: {
+					type: "msg",
+					msg: "提示"
 				},
-				
-				showStatusBarStatus:true ,//底部控制条的显示状态
-				
-				oldTouchs:{},//旧的触摸返回对象
-				oldValue:{},
-				dbCount:0,//点击蒙版的次数
-				touchType:null
+
+				showStatusBarStatus: true, //底部控制条的显示状态
+
+				oldTouchs: {}, //旧的触摸返回对象
+				oldValue: {},
+				dbCount: 0, //点击蒙版的次数
+				touchType: null,
+				platform:'',//当前所在平台
 			}
 		},
 		created() {
@@ -97,6 +116,7 @@
 			this.statusBarHeight = res.statusBarHeight;
 			this.windowHeight = res.windowHeight //屏幕高度
 			this.windowWidth = res.windowWidth //屏幕宽度
+			this.platform = res.platform;
 			// 引入图标
 			d.addRule('fontFace', {
 				'fontFamily': "iconfont",
@@ -107,31 +127,40 @@
 		mounted() {
 			videoCTX = this.$refs.video;
 		},
-		computed:{
-			videoBox(){
-				return this.fullScreenStatus ?`width:${this.windowHeight}px;height:${this.windowWidth}px`:`width:750rpx;height:225px;`
+		computed: {
+			videoBox() {
+				return this.fullScreenStatus ? `width:${this.windowHeight}px;height:${this.windowWidth}px` :
+					`width:750rpx;height:225px;`
 			},
-			modalStyle(){
-				let top = this.statusBarHeight+44
+			modalStyle() {
+				let top = this.statusBarHeight + 44
 				return `top:${top}px;bottom:44px;`
 			}
 		},
 		methods: {
+			//全屏、退出全屏
+			fullOrExitScreen(){
+				if(this.fullScreenStatus){
+					videoCTX.exitFullScreen()//退出全屏
+				}else{
+					videoCTX.requestFullScreen()
+				}
+			},
 			//显示或隐藏控制条
-			showOrHideStatusBar(){
-				this.showStatusBarStatus?this.hideStatusBar():this.showStatusBar()
+			showOrHideStatusBar() {
+				this.showStatusBarStatus ? this.hideStatusBar() : this.showStatusBar()
 			},
 			//显示控制条
-			showStatusBar(){
+			showStatusBar() {
 				this.showStatusBarStatus = true;
-				timer = timer? clearTimeout(timer):null;
-				let timer = setTimeout(()=>{
+				timer = timer ? clearTimeout(timer) : null;
+				let timer = setTimeout(() => {
 					this.hideStatusBar()
 					timer = null;
-				},3000)
+				}, 3000)
 			},
 			//隐藏控制条
-			hideStatusBar(){
+			hideStatusBar() {
 				this.showStatusBarStatus = false;
 			},
 			back() {
@@ -142,8 +171,8 @@
 			//播放和暂停
 			playOrPause() {
 				this.showToast({
-					msg:this.isplay?'暂停':'播放',
-					autoClose:true
+					msg: this.isplay ? '暂停' : '播放',
+					autoClose: true
 				})
 				if (this.isplay) {
 					videoCTX.pause()
@@ -152,76 +181,105 @@
 					videoCTX.play()
 				}
 			},
+			//全屏变化时
 			fullscreenchange(e) {
-
+				this.fullScreenStatus = e.detail.fullScreen //进入全屏时，把全屏状态保存下来
 			},
 			//监听时间进度
 			timeupdate(e) {
-				if(!this.showToastStatus){//时间框没出来时，才通过这里获得当前时间
+				if (!this.showToastStatus) { //时间框没出来时，才通过这里获得当前时间
 					this.currentTime = parseInt(e.detail.currentTime); //获得当前时间
 				}
 				this.duration = parseInt(e.detail.duration); //获得总时长
 			},
 			//进度条变化
-			sliderChange(e){//拖动进度条结束时
+			sliderChange(e) { //拖动进度条结束时
 				videoCTX.seek(e) //视频跳转到某个时间
 				this.showToastStatus = false;
 				videoCTX.play()
 			},
-			sliderUpdate(e){//拖动进度条过程中
-			   this.showStatusBar()
-			    videoCTX.pause();
+			sliderUpdate(e) { //拖动进度条过程中
+				this.showStatusBar()
+				videoCTX.pause();
 				this.showToastStatus = true;
 				this.currentTime = e;
 				this.showToast({
-					type:'progress',
-					autoClose:false
+					type: 'progress',
+					autoClose: false
 				})
-				
+
 			},
-			
-			showToast(options){
+
+			showToast(options) {
 				this.toast.type = options.type || 'msg'
-				this.toast.msg = options.msg ||'提示'
+				this.toast.msg = options.msg || '提示'
 				this.showToastStatus = true;
-				
-				if(options.autoClose !== false){ //autoClose代表是否自动关闭提示框（拖动时不应该自动关闭）
-					if(showToastTimer) clearTimeout(showToastTimer)
-					showToastTimer = setTimeout(()=>{
+
+				if (options.autoClose !== false) { //autoClose代表是否自动关闭提示框（拖动时不应该自动关闭）
+					if (showToastTimer) clearTimeout(showToastTimer)
+					showToastTimer = setTimeout(() => {
 						this.showToastStatus = false;
 						showToastTimer = null
-					},500)
+					}, 500)
 				}
 			},
-			touchStart(e){
-				this.oldTouchs = e.changedTouches[0];
+			//开始触摸蒙版
+			touchStart(e) {
+				this.oldTouchs = e.changedTouches[0]; //旧坐标
 				this.oldValue = {
-					currentTime:this.currentTime
+					currentTime: this.currentTime //保存旧的时间
 				}
 			},
-			touchMove(e){
-				let newTouchs = e.changedTouches[0];
-				if(!this.touchType){
-					this.touchType = Math.abs(newTouchs.pageX-this.oldTouchs.pageX) > 20 ?'current':null
-				}else if(){
-					
+			//在蒙版上移动
+			touchMove(e) {
+				let newTouchs = e.changedTouches[0]; //新坐标
+				if (!this.touchType) {
+					this.touchType = Math.abs(newTouchs.pageX - this.oldTouchs.pageX) > 20 ? 'currentTime' :null //拖动距离大于20，就进入拖动进度条模式
+					if(this.fullScreenStatus && this.platform === 'ios'){//处于全屏状态
+						this.touchType = Math.abs(newTouchs.pageY - this.oldTouchs.pageY) > 20 ? 'currentTime' :null //拖动距离大于20，就进入拖动进度条模式
+					}
+					if (this.touchType === 'currentTime') {
+						videoCTX.pause()
+					}
+				} else if (this.touchType === 'currentTime') {//拖拽过程中
+					this.showToast({
+						type: 'progress',
+						autoClose: false
+					})
+					this.showStatusBar()
+					let newCurrentTime = (newTouchs.pageX - this.oldTouchs.pageX) / 250 * this.duration * 2 + this.oldValue.currentTime * 1;
+					if(this.fullScreenStatus && this.platform === 'ios'){
+						newCurrentTime = (newTouchs.pageY - this.oldTouchs.pageY) / 250 * this.duration * 2 + this.oldValue.currentTime * 1;
+					}
+					newCurrentTime = newCurrentTime > this.duration ? this.duration : newCurrentTime;
+					newCurrentTime = newCurrentTime < 0 ? 0 : newCurrentTime;
+					this.currentTime = newCurrentTime;
 				}
 			},
-			touchEnd(e){
-				if(this.dbCount ===1 || this.dbCount === 0){
-					this.dbCount++
+			//结束触摸蒙版
+			touchEnd(e) {
+				if (this.touchType === 'currentTime') { //处于拖动模式
+					videoCTX.seek(this.currentTime) //视频跳转到某个时间
+					videoCTX.play()
+
+				} else { //处于点击模式
+					if (this.dbCount === 1 || this.dbCount === 0) {
+						this.dbCount++
+					}
+					if (this.dbCount > 0) {
+						setTimeout(() => {
+							if (this.dbCount === 1) { //单击
+								this.showOrHideStatusBar()
+							}
+							if (this.dbCount === 2) { //双击
+								this.playOrPause()
+							}
+							this.dbCount = 0;
+						}, 250)
+					}
 				}
-				if(this.dbCount > 0){
-					setTimeout(()=>{
-						if(this.dbCount === 1){//单击
-							this.showOrHideStatusBar()
-						}
-						if(this.dbCount === 2){//双击
-							this.playOrPause()
-						}
-						this.dbCount = 0;
-					},250)
-				}
+				this.touchType = null; //拖拽完毕，重置状态
+				this.showToastStatus = false;
 			}
 		},
 		filters: {
