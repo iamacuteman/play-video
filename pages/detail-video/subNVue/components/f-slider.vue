@@ -29,6 +29,7 @@
 				width: 0,//进度条的总宽度
 				activeWith:0,//当前播放进度的宽度
 				moveStatus:false,//拖拽状态
+				left:0
 			}
 		},
 		computed:{
@@ -50,7 +51,13 @@
 			}
 		},
 		created() {
-			this.width = this.v.windowWidth-44-44-80-15;
+			if(!this.v.fullScreenStatus){ //坚屏状态
+				this.width = this.v.windowWidth-44-44-80-15;
+				this.left = 44;
+			}else{ //横屏状态
+				this.width = this.v.windowHeight-60-15;
+				this.left = 30;
+			}
 			this.active()
 		},
 		methods:{
@@ -61,11 +68,11 @@
 				if(this.duration === 0) return
 				this.moveStatus = true; //开启拖拽状态
 				//e.changedTouches[0].screenX (当前触摸点距离屏幕左边的长度)
-				 this.activeWith= e.changedTouches[0].screenX-44
+				 this.activeWith= e.changedTouches[0].screenX-this.left
 			},
 			touchmove(e){
 				if(this.duration === 0) return
-				let d = e.changedTouches[0].screenX-44
+				let d = e.changedTouches[0].screenX-this.left
 				if(d<=0){
 					this.activeWith = 0
 				}else if(d>=this.width){
